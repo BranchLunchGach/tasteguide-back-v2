@@ -41,7 +41,7 @@ public class MailService {
         String html = String.format("""
                 <html>
                   <body style="font-family: Arial, sans-serif;">
-                    <h2>비밀번호 재설정 인증 코드</h2>
+                    <h2>회원가입 이메일 인증 코드</h2>
                     <p>아래 인증 코드를 입력해주세요:</p>
                     <p style="font-size: 24px; font-weight: bold;">%s</p>
                     <p>3분 이내에 입력하지 않으면 코드가 만료됩니다.</p>
@@ -53,7 +53,7 @@ public class MailService {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(email);
-            helper.setSubject("비밀번호 재설정 인증 코드");
+            helper.setSubject("회원가입 이메일 인증 코드");
             helper.setText(html, true);
             javaMailSender.send(message);
         } catch (MessagingException e) {
