@@ -22,25 +22,25 @@ public class ErrorResponse {
 	private final LocalDateTime timestamp;
 	private final List<FieldError> errors;
 
-	public static ErrorResponse of(ErrorCode errorCode) {
-		return ErrorResponse.builder()
-			.status(errorCode.getStatus())
-			.code(errorCode.getCode())
-			.message(errorCode.getMessage())
-			.timestamp(LocalDateTime.now())
-			.errors(Collections.emptyList())
-			.build();
-	}
-
-	public static ErrorResponse of(ErrorCode errorCode, BindingResult bindingResult) {
-		return ErrorResponse.builder()
-			.status(errorCode.getStatus())
-			.code(errorCode.getCode())
-			.message(errorCode.getMessage())
-			.timestamp(LocalDateTime.now())
-			.errors(FieldError.of(bindingResult))
-			.build();
-	}
+//	public static ErrorResponse of(ErrorCode errorCode) {
+//		return ErrorResponse.builder()
+//			.status(errorCode.getStatus())
+//			.code(errorCode.getCode())
+//			.message(errorCode.getMessage())
+//			.timestamp(LocalDateTime.now())
+//			.errors(Collections.emptyList())
+//			.build();
+//	}
+//
+//	public static ErrorResponse of(ErrorCode errorCode, BindingResult bindingResult) {
+//		return ErrorResponse.builder()
+//			.status(errorCode.getStatus())
+//			.code(errorCode.getCode())
+//			.message(errorCode.getMessage())
+//			.timestamp(LocalDateTime.now())
+//			.errors(FieldError.of(bindingResult))
+//			.build();
+//	}
 
 	@Getter
 	@AllArgsConstructor
