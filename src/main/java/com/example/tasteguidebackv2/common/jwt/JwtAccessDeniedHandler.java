@@ -1,6 +1,6 @@
 package com.example.tasteguidebackv2.common.jwt;
 
-import com.example.tasteguidebackv2.common.exception.ErrorResponse;
+import com.example.tasteguidebackv2.common.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,7 +18,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
 
-    // 권한 부(로그인은 되어있지만 ROLE_ADMIN만 접근 가능한 페이지에 ROLE_USER가 요청한 경우)
+    // 권한 부여 실패(로그인은 되어있지만 ROLE_ADMIN만 접근 가능한 페이지에 ROLE_USER가 요청한 경우)
     @Override
     public void handle(HttpServletRequest request,
                        HttpServletResponse response,
@@ -26,8 +26,9 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 
-        ErrorResponse error = ErrorResponse.of(CommonErrorCode.ACCESS_DENIED);
+        ApiResponse<Void> errorResponse = ApiResponse.error(CommonErrorCode.ACCESS_DENIED);
 
-        response.getWriter().write(objectMapper.writeValueAsString(error));
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
+

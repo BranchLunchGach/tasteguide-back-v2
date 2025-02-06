@@ -1,5 +1,6 @@
 package com.example.tasteguidebackv2.domain.auth.controller;
 
+import com.example.tasteguidebackv2.common.response.ApiResponse;
 import com.example.tasteguidebackv2.domain.auth.dto.request.LoginRequest;
 import com.example.tasteguidebackv2.domain.auth.dto.response.TokenResponse;
 import com.example.tasteguidebackv2.domain.auth.service.AuthService;
@@ -23,21 +24,20 @@ public class AuthController {
 	private final AuthService authService;
 
 	@PostMapping("/login")
-	public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+	public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
 		TokenResponse tokenResponse = authService.login(request);
-		return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);
+		return ResponseEntity.ok(ApiResponse.success("로그인 성공", tokenResponse));
 	}
 
 	@PostMapping("/logout")
-	public ResponseEntity<Void> logout(HttpServletRequest request) {
+	public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
 		authService.logout(request);
-		return ResponseEntity.status(HttpStatus.OK).build();
+		return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
 	}
 
 	@PostMapping("/reissue")
-	public ResponseEntity<TokenResponse> reissue(@RequestHeader("Authorization") String refreshToken) {
+	public ResponseEntity<ApiResponse<TokenResponse>> reissue(@RequestHeader("Authorization") String refreshToken) {
 		TokenResponse tokenResponse = authService.reissue(refreshToken);
-		return ResponseEntity.ok(tokenResponse);
+		return ResponseEntity.ok(ApiResponse.success("토큰 재발급 성공", tokenResponse));
 	}
-
 }

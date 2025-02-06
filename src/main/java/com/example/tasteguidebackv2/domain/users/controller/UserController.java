@@ -1,6 +1,7 @@
 package com.example.tasteguidebackv2.domain.users.controller;
 
 import com.example.tasteguidebackv2.common.jwt.UserAuth;
+import com.example.tasteguidebackv2.common.response.ApiResponse;
 import com.example.tasteguidebackv2.domain.users.dto.request.UserCreateRequest;
 import com.example.tasteguidebackv2.domain.users.dto.request.UserUpdateRequest;
 import com.example.tasteguidebackv2.domain.users.dto.response.UserResponse;
@@ -20,25 +21,28 @@ public class UserController {
 	private final UserService userService;
 
 	@PostMapping
-	public ResponseEntity<Void> createUser(@Valid @RequestBody UserCreateRequest request) {
+	public ResponseEntity<ApiResponse<Void>> createUser(@Valid @RequestBody UserCreateRequest request) {
 		userService.createUser(request);
-		return ResponseEntity.status(HttpStatus.CREATED).build();
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.success("회원가입이 완료되었습니다."));
 	}
 
 	@GetMapping("/me")
-	public ResponseEntity<UserResponse> findById(@AuthenticationPrincipal UserAuth userAuth) {
-		return ResponseEntity.status(HttpStatus.OK).body(userService.findById(userAuth));
+	public ResponseEntity<ApiResponse<UserResponse>> findById(@AuthenticationPrincipal UserAuth userAuth) {
+		UserResponse response = userService.findById(userAuth);
+		return ResponseEntity.ok(ApiResponse.success("회원 조회 성공", response));
 	}
 
 	@PatchMapping
-	public ResponseEntity<Void> updateUser(@Valid @RequestBody UserUpdateRequest request, @AuthenticationPrincipal UserAuth userAuth) {
+	public ResponseEntity<ApiResponse<Void>> updateUser(@Valid @RequestBody UserUpdateRequest request,
+														@AuthenticationPrincipal UserAuth userAuth) {
 		userService.updateUser(request, userAuth);
-		return ResponseEntity.status(HttpStatus.OK).build();
+		return ResponseEntity.ok(ApiResponse.success("회원 정보 수정 완료"));
 	}
 
 	@DeleteMapping
-	public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal UserAuth userAuth) {
+	public ResponseEntity<ApiResponse<Void>> deleteUser(@AuthenticationPrincipal UserAuth userAuth) {
 		userService.deleteUser(userAuth);
-		return ResponseEntity.status(HttpStatus.OK).build();
+		return ResponseEntity.ok(ApiResponse.success("회원 탈퇴 완료"));
 	}
 }
