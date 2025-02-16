@@ -1,5 +1,6 @@
 package com.example.tasteguidebackv2.common.exception;
 
+import com.example.tasteguidebackv2.common.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -9,24 +10,23 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(BizException.class)
-	public ResponseEntity<ErrorResponse> handleBizError(BizException exception) {
+	public ResponseEntity<ApiResponse<?>> handleBizError(BizException exception) {
 		return ResponseEntity
-			.status(exception.getErrorCode().getStatus())
-			.body(ErrorResponse.of(exception.getErrorCode()));
+				.status(exception.getErrorCode().getStatus())
+				.body(ApiResponse.error(exception.getErrorCode()));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ErrorResponse> handleValidationError(MethodArgumentNotValidException exception) {
+	public ResponseEntity<ApiResponse<?>> handleValidationError(MethodArgumentNotValidException exception) {
 		return ResponseEntity
-			.badRequest()
-			.body(ErrorResponse.of(CommonErrorCode.INVALID_INPUT_VALUE, exception.getBindingResult()));
+				.badRequest()
+				.body(ApiResponse.error(CommonErrorCode.INVALID_INPUT_VALUE, exception.getBindingResult()));
 	}
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
-	public ResponseEntity<String> handleMissingServletRequestParameter(
-		MissingServletRequestParameterException exception) {
-		String missingParam = exception.getParameterName();
-		String message = String.format("필수 파라미터 '%s'가 없습니다.", missingParam);
-		return ResponseEntity.badRequest().body(message);
+	public ResponseEntity<ApiResponse<?>> handleMissingServletRequestParameter(MissingServletRequestParameterException exception) {
+		return ResponseEntity
+				.badRequest()
+				.body(ApiResponse.error(CommonErrorCode.MISSING_PARAMETER));
 	}
 }
