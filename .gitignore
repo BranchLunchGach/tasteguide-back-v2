@@ -1,0 +1,79 @@
+# ===============================
+# ✅ Gradle 관련
+# ===============================
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ===============================
+# ✅ Java 클래스 빌드 디렉토리 예외 (src 내부는 제외)
+# ===============================
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ===============================
+# ✅ 환경 설정 파일 (.env는 무시, .yml은 추적)
+# ===============================
+.env
+# *.properties
+
+# application.yml은 버전 관리 (내용은 .env로 관리)
+# application-*.yml 등도 추적 (profile 분리 전략 사용 시)
+
+# ===============================
+# ✅ Docker 및 인프라
+# ===============================
+infra/**                     # infra 전체 무시
+!infra/docker-compose.yml    # 단, docker-compose.yml은 추적
+
+# ===============================
+# ✅ IDE 관련 파일 무시
+# ===============================
+
+# Eclipse / Spring Tool Suite
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
+.vscode/
+
+# ===============================
+# ✅ OS별 자동 생성 파일
+# ===============================
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===============================
+# ✅ 불필요한 기본 파일
+# ===============================
+HELP.md
