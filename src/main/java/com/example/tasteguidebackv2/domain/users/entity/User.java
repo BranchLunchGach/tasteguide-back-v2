@@ -1,85 +1,53 @@
 package com.example.tasteguidebackv2.domain.users.entity;
 
-import com.example.tasteguidebackv2.common.base.BaseEntity;
-import com.example.tasteguidebackv2.domain.menu.entity.Menu;
-import com.example.tasteguidebackv2.domain.restaurant.entity.Restaurant;
-import jakarta.persistence.*;
-import lombok.*;
+import java.time.LocalDate;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Builder
-@Table(name = "users")
-public class User extends BaseEntity {
+public class User {
 
 	@Id
+	@Column(name = "user_no")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private int userNo;
 
-	@Column(nullable = false, unique = true)
-	private String email;
-
-	@Column(nullable = false)
+	@Column(name = "user_id", unique = true)
+	private String userId;
 	private String password;
-
-	@Column(nullable = false)
 	private String name;
-
-	@Column(nullable = false, unique = true)
-	private String nickname;
-
 	private String address;
 
 	@Enumerated(EnumType.STRING)
-	private Gender gender;
+	private Gender gender; // Boolean 어떤지..?
 
 	private String phone;
-
-	private String taste;
+	private String taste; // 취향(,구분)
 
 	@Column(name = "birth_date")
-	private LocalDateTime birthDate;
+	private LocalDate birthDate;
+	private String role;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private UserRole userRole;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Restaurant> restaurants = new ArrayList<>();
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Menu> menus = new ArrayList<>();
-
-	public User(
-		String email, String password, String name, String nickname,
-		String address, Gender gender, String phone,
-		String taste, LocalDateTime birthDate, UserRole userRole
-	) {
-		this.email = email;
-		this.password = password;
-		this.name = name;
-		this.nickname = nickname;
-		this.address = address;
-		this.gender = gender;
-		this.phone = phone;
-		this.taste = taste;
-		this.birthDate = birthDate;
-		this.userRole = userRole;
-	}
-
-	public void updateUser(String nickname, String password) {
-		if (nickname != null) {
-			this.nickname = nickname;
-		}
-		if (password != null) {
-			this.password = password;
-		}
+	@Override
+	public String toString() {
+		return "User [userNo=" + userNo + ", userId=" + userId + ", password=" + password + ", name=" + name
+				+ ", address=" + address + ", gender=" + gender + ", phone=" + phone + ", taste=" + taste
+				+ ", birthDate=" + birthDate + ", role=" + role + "]";
 	}
 }
-

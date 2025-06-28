@@ -1,54 +1,52 @@
 package com.example.tasteguidebackv2.domain.menu.entity;
 
-import com.example.tasteguidebackv2.common.base.BaseEntity;
-import com.example.tasteguidebackv2.domain.restaurant.entity.Restaurant;
-import com.example.tasteguidebackv2.domain.users.entity.User;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Builder
-public class Menu extends BaseEntity {
-
+public class Menu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "menu_no")
+    private int menuNo;
+    private String category; // 대분류 ex) 밥류, 면류
 
-    private String category; // ex) 밥류, 면류
-
-    @Column(nullable = false)
-    private String name; // 메뉴 이름
+    @Column(name = "menu_name")
+    private String menuName; // 메뉴명 ex) 파스타, 덮밥
 
     private int calorie;
 
+    @Column(columnDefinition = "decimal(5,2)")
     private double carbohydrate;
 
+    @Column(columnDefinition = "decimal(5,2)")
     private double fat;
 
+    @Column(columnDefinition = "decimal(5,2)")
     private double protein;
 
     private String nation; // ex) 한식, 중식
-
     private boolean soup;
-
     private String season;
     private String holiday;
     private String time;
     private String weather;
-
     private String keyword;
 
+    @Column(name = "img_url")
     private String imgUrl;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id") // FK: 메뉴가 속한 레스토랑
-    private Restaurant restaurant;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
 
 }
