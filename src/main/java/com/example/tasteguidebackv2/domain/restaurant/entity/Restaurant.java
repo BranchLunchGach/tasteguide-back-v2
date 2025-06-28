@@ -36,11 +36,11 @@ public class Restaurant extends BaseEntity {
 
     private String blogReviewCnt;
 
-    @ElementCollection
-    private List<String> keywordReviews = new ArrayList<>();
+//    @ElementCollection
+//    private List<String> keywordReviews = new ArrayList<>();
 
-    @ElementCollection
-    private List<String> textReviews = new ArrayList<>();
+//    @ElementCollection
+//    private List<String> textReviews = new ArrayList<>();
 
     private String info; // 매장 소개 (기존 restauranInfo)
 
