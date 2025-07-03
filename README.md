@@ -28,9 +28,10 @@ cd tasteguide-back-v2
 ### 3. Docker 서비스 실행 (MySQL, Redis)
 
 ```bash
+cd infra
 docker-compose up -d
 ```
-
+> infra폴더로 이동 후
 > `docker-compose.yml` 구성 예시:
 
 <details>
@@ -79,12 +80,6 @@ docker ps
 
 ```bash
 ./gradlew bootRun
-```
-
-> 또는 빌드 후 jar 파일 실행:
-
-```bash
-java -jar build/libs/tasteguidebackv2-0.0.1-SNAPSHOT.jar
 ```
 
 ---
