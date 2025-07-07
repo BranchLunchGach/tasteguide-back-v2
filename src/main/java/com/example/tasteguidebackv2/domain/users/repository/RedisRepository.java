@@ -38,24 +38,21 @@ public class RedisRepository {
 		}
 	}
 
-	public void saveRefreshToken(Long userId, String refreshToken, long expirationMillis) {
+	// ✅ 리프레시 토큰의 jti 저장 (토큰 전체 대신 jti만 저장)
+	public void saveRefreshToken(Long userId, String jti, long expirationMillis) {
 		try {
 			String key = REFRESH_TOKEN_PREFIX + userId;
-			System.out.println("저장 시도 key: " + key);
-			System.out.println("refreshToken: " + refreshToken);
-			System.out.println("expirationMillis: " + expirationMillis);
-			System.out.println("redisTemplate: " + redisTemplate);
-
-			redisTemplate.opsForValue().set(key, refreshToken, expirationMillis, TimeUnit.MILLISECONDS);
+			redisTemplate.opsForValue().set(key, jti, expirationMillis, TimeUnit.MILLISECONDS);
 		} catch (Exception e) {
 			throw new BizException(UserErrorCode.INVALID_REQUEST);
 		}
 	}
 
-	public boolean validateRefreshToken(Long userId, String refreshToken) {
+	// ✅ 토큰에서 추출한 jti와 비교
+	public boolean validateRefreshToken(Long userId, String jti) {
 		String key = REFRESH_TOKEN_PREFIX + userId;
-		String savedToken = redisTemplate.opsForValue().get(key);
-		return Objects.equals(savedToken, refreshToken);
+		String savedJti = redisTemplate.opsForValue().get(key);
+		return Objects.equals(savedJti, jti);
 	}
 
 	public void deleteRefreshToken(Long userId) {

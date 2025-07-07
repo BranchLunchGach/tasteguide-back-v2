@@ -50,7 +50,6 @@ public class AuthService {
 			if (token != null && jwtUtil.validateToken(token)) {
 				long expiration = jwtUtil.getExpiration(token);
 				redisRepository.saveBlackListToken(token, expiration);
-
 				UserAuth userAuth = jwtUtil.extractUserAuth(token);
 				redisRepository.deleteRefreshToken(userAuth.getId());
 			}
@@ -63,20 +62,21 @@ public class AuthService {
 	public TokenResponse reissue(String bearerToken) {
 		// 1. Bearer 제거
 		if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
-			throw new BizException(AuthErrorCode.MISMATCHED_REFRESH_TOKEN);
+			throw new BizException(AuthErrorCode.INVALID_AUTH_HEADER);
 		}
 		String refreshToken = bearerToken.substring(7);
 
 		// 2. 토큰 유효성 검증
 		if (!jwtUtil.validateToken(refreshToken)) {
-			throw new BizException(AuthErrorCode.MISMATCHED_REFRESH_TOKEN);
+			throw new BizException(AuthErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
 		// 3. 유저 정보 추출
 		UserAuth userAuth = jwtUtil.extractUserAuth(refreshToken);
 
 		// 4. Redis에 저장된 Refresh Token과 일치하는지 확인
-		if (!redisRepository.validateRefreshToken(userAuth.getId(), refreshToken)) {
+		String jti = jwtUtil.extractJti(refreshToken);
+		if (!redisRepository.validateRefreshToken(userAuth.getId(), jti)) {
 			throw new BizException(AuthErrorCode.REUSED_REFRESH_TOKEN);
 		}
 

@@ -16,13 +16,14 @@ public class TokenService {
 	private final RedisRepository redisRepository;
 
 	public TokenResponse generateTokens(Long userId, UserRole userRole) {
-		String accessToken = jwtUtil.createToken(userId, userRole);
+		String accessToken = jwtUtil.createAccessToken(userId, userRole);
 		String refreshToken = jwtUtil.createRefreshToken(userId, userRole);
 		return new TokenResponse(accessToken, refreshToken);
 	}
 
 	public void saveRefreshToken(Long userId, String refreshToken) {
-		long refreshExpiration = jwtUtil.getRefreshExpiration(refreshToken);
-		redisRepository.saveRefreshToken(userId, refreshToken, refreshExpiration);
+		long refreshExpiration = jwtUtil.getExpiration(refreshToken);
+		String jti = jwtUtil.extractJti(refreshToken);
+		redisRepository.saveRefreshToken(userId, jti, refreshExpiration);
 	}
 }
