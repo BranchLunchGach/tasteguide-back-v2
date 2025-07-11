@@ -1,7 +1,6 @@
 package com.example.tasteguidebackv2.common.config;
 
 import com.example.tasteguidebackv2.common.jwt.JwtFilter;
-import com.example.tasteguidebackv2.common.jwt.SecurityUrlMatcher;
 import com.example.tasteguidebackv2.common.oauth2.CustomOAuth2UserService;
 import com.example.tasteguidebackv2.common.oauth2.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;

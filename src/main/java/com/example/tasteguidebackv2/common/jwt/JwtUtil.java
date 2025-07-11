@@ -1,98 +1,107 @@
 package com.example.tasteguidebackv2.common.jwt;
 
 import com.example.tasteguidebackv2.domain.users.entity.UserRole;
+import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.UUID;
+
+import static com.example.tasteguidebackv2.common.jwt.JwtConstants.*;
 
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtUtil {
 
 	@Value("${jwt.secret}")
 	private String secretKey;
 
-	private static final long EXPIRATION = 1000L * 60 * 30; // 30분
-	private static final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 14; // 14일
+	@Value("${jwt.access-token-expiration}")
+	private long accessTokenExpiration;
 
-	public String createToken(Long id, UserRole userRole){
-		return Jwts.builder()
-				.setSubject(String.valueOf(id))
-				.claim("userRole", userRole.name())
-				.setIssuedAt(new Date())
+	@Value("${jwt.refresh-token-expiration}")
+	private long refreshTokenExpiration;
 
-				.setExpiration(new Date(System.currentTimeMillis()+EXPIRATION))
-
-				.signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
-				.compact();
+	private Key getSigningKey() {
+		return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 	}
 
-	public UserAuth extractUserAuth(String token){
-		Claims claims = Jwts.parserBuilder()
-				.setSigningKey(secretKey.getBytes())
-				.build()
-				.parseClaimsJws(token)
-				.getBody();
-
-		return new UserAuth(Long.parseLong(claims.getSubject()), UserRole.valueOf(claims.get("userRole",String.class)));
+	public String createAccessToken(Long id, UserRole userRole) {
+		return buildToken(id, userRole, accessTokenExpiration, false);
 	}
 
-	public boolean validateToken(String token){
+	public String createRefreshToken(Long id, UserRole userRole) {
+		return buildToken(id, userRole, refreshTokenExpiration, true);
+	}
+
+	public UserAuth extractUserAuth(String token) {
+		Claims claims = parseClaims(token);
+		Long userId = Long.parseLong(claims.getSubject());
+		UserRole userRole = UserRole.valueOf(claims.get(CLAIM_USER_ROLE, String.class));
+		return new UserAuth(userId, userRole);
+	}
+
+	public boolean validateToken(String token) {
 		try {
-			extractUserAuth(token);
+			parseClaims(token);
 			return true;
-		} catch (Exception e) {
-			return false;
+		} catch (ExpiredJwtException e) {
+			log.warn("JWT 만료됨");
+		} catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
+			log.warn("유효하지 않은 JWT: {}", e.getMessage());
 		}
+		return false;
 	}
 
-	public String extractToken(HttpServletRequest request){
-		String bearer = request.getHeader("Authorization");
-		if(bearer != null && bearer.startsWith("Bearer ")){
-			return bearer.substring(7);
+	public String extractToken(HttpServletRequest request) {
+		String bearer = request.getHeader(HEADER_AUTHORIZATION);
+		if (bearer != null && bearer.startsWith(TOKEN_PREFIX)) {
+			return bearer.substring(TOKEN_PREFIX.length());
 		}
 		return null;
 	}
 
-	public long getExpiration(String token){
-		Claims claims = Jwts.parserBuilder()
-				.setSigningKey(secretKey.getBytes())
-				.build()
-				.parseClaimsJws(token)
-				.getBody();
+	public String extractJti(String token) {
+		Claims claims = parseClaims(token);
+		return claims.get(CLAIM_JTI, String.class);
+	}
 
+	public long getExpiration(String token) {
+		Claims claims = parseClaims(token);
 		return claims.getExpiration().getTime() - System.currentTimeMillis();
 	}
 
-	public String createRefreshToken(Long id, UserRole role) {
-		return Jwts.builder()
+	private String buildToken(Long id, UserRole userRole, long expiration, boolean includeJti) {
+		JwtBuilder builder = Jwts.builder()
 				.setSubject(String.valueOf(id))
-				.claim("userRole", role.name())
-				.claim("jti", UUID.randomUUID().toString())
+				.claim(CLAIM_USER_ROLE, userRole.name())
 				.setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
-				.signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
+				.setExpiration(new Date(System.currentTimeMillis() + expiration));
+
+		if (includeJti) {
+			builder.claim(CLAIM_JTI, UUID.randomUUID().toString());
+		}
+
+		return builder
+				.signWith(getSigningKey())
 				.compact();
 	}
 
-	public long getRefreshExpiration(String refreshToken) {
-		Claims claims = Jwts.parserBuilder()
-				.setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
+	private Claims parseClaims(String token) {
+		return Jwts.parserBuilder()
+				.setSigningKey(getSigningKey())
 				.build()
-				.parseClaimsJws(refreshToken)
+				.parseClaimsJws(token)
 				.getBody();
-
-		return claims.getExpiration().getTime() - System.currentTimeMillis();
 	}
 }

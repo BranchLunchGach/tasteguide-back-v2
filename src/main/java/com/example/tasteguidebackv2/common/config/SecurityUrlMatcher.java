@@ -1,4 +1,4 @@
-package com.example.tasteguidebackv2.common.jwt;
+package com.example.tasteguidebackv2.common.config;
 
 import java.util.Arrays;
 
