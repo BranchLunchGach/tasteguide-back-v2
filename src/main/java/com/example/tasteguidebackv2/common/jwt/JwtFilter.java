@@ -24,6 +24,17 @@ public class JwtFilter extends OncePerRequestFilter {
 	private final JwtExtractor jwtExtractor;
 	private final JwtBlacklistService jwtBlacklistService;
 
+	/**
+	 * Processes incoming HTTP requests to authenticate users based on JWT tokens.
+	 *
+	 * Extracts a JWT token from the request, checks if it is blacklisted, and validates it. If the token is valid and not blacklisted, sets the authentication in the security context for the current request. If the token is missing, blacklisted, or invalid, the request is either passed through without authentication or an unauthorized error is returned.
+	 *
+	 * @param request  the incoming HTTP request
+	 * @param response the HTTP response
+	 * @param filterChain the filter chain to continue processing
+	 * @throws ServletException if an error occurs during filtering
+	 * @throws IOException if an I/O error occurs during filtering
+	 */
 	@Override
 	protected void doFilterInternal(
 			HttpServletRequest request,

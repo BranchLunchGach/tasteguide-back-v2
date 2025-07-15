@@ -26,11 +26,25 @@ public class SecurityConfig {
 	private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
+	/**
+	 * Creates and returns a {@link PasswordEncoder} that uses BCrypt hashing for encoding passwords.
+	 *
+	 * @return a BCrypt-based password encoder
+	 */
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
+	/**
+	 * Configures and returns the application's security filter chain.
+	 *
+	 * Sets up stateless session management, disables CSRF protection, and defines authorization rules for public, refresh, and admin endpoints. Integrates JWT authentication, OAuth2 login with custom user service and success handler, and configures a custom entry point for authentication exceptions.
+	 *
+	 * @param http the HttpSecurity to configure
+	 * @return the configured SecurityFilterChain
+	 * @throws Exception if an error occurs during configuration
+	 */
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
 		http

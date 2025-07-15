@@ -11,16 +11,20 @@ public class JwtBlacklistService {
     private final RedisRepository redisRepository;
 
     /**
-     * 토큰이 블랙리스트에 존재하는지 확인
+     * Checks whether the specified JWT token is present in the blacklist.
+     *
+     * @param token the JWT token to check
+     * @return true if the token is blacklisted; false otherwise
      */
     public boolean isBlacklisted(String token) {
         return redisRepository.validateKey(token);
     }
 
     /**
-     * 블랙리스트에 토큰을 등록
-     * @param token 블랙리스트로 처리할 토큰
-     * @param expirationMillis 만료 시간(ms)
+     * Adds a JWT token to the blacklist with a specified expiration time in milliseconds.
+     *
+     * @param token the JWT token to blacklist
+     * @param expirationMillis the duration in milliseconds until the token is removed from the blacklist
      */
     public void addToBlacklist(String token, long expirationMillis) {
         redisRepository.saveBlackListToken(token, expirationMillis);

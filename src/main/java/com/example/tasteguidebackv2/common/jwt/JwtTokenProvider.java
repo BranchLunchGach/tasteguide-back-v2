@@ -27,26 +27,42 @@ public class JwtTokenProvider {
 	@Value("${jwt.refresh-token-expiration}")
 	private long refreshTokenExpiration;
 
+	/**
+	 * Generates and returns the cryptographic signing key derived from the configured secret key.
+	 *
+	 * @return the HMAC SHA signing key used for JWT operations
+	 */
 	private Key getSigningKey() {
 		return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 	}
 
 	/**
-	 * 액세스 토큰 생성
+	 * Generates a JWT access token for the specified user ID and role.
+	 *
+	 * @param userId the unique identifier of the user
+	 * @param role the role assigned to the user
+	 * @return a signed JWT access token string
 	 */
 	public String createAccessToken(Long userId, UserRole role) {
 		return buildToken(userId, role, accessTokenExpiration, false);
 	}
 
 	/**
-	 * 리프레시 토큰 생성 (JTI 포함)
+	 * Creates a refresh token for the specified user, including a JWT ID (JTI) claim.
+	 *
+	 * @param userId the unique identifier of the user
+	 * @param role the user's role to be included in the token claims
+	 * @return a signed JWT refresh token string containing the user ID, role, and JTI
 	 */
 	public String createRefreshToken(Long userId, UserRole role) {
 		return buildToken(userId, role, refreshTokenExpiration, true);
 	}
 
-	/**
-	 * 토큰 유효성 검사
+	/****
+	 * Validates the given JWT token.
+	 *
+	 * @param token the JWT token to validate
+	 * @return true if the token is valid and not expired; false otherwise
 	 */
 	public boolean validateToken(String token) {
 		try {
@@ -61,7 +77,12 @@ public class JwtTokenProvider {
 	}
 
 	/**
-	 * 토큰에서 사용자 정보 추출
+	 * Extracts user authentication information from the given JWT token.
+	 *
+	 * Parses the token to retrieve the user ID and user role claims, returning a {@code UserAuth} object containing these values.
+	 *
+	 * @param token the JWT token to parse
+	 * @return a {@code UserAuth} object with the extracted user ID and role
 	 */
 	public UserAuth getUserAuth(String token) {
 		Claims claims = parseClaims(token);
@@ -71,20 +92,34 @@ public class JwtTokenProvider {
 	}
 
 	/**
-	 * 토큰에서 JTI 추출
+	 * Extracts the JWT ID (JTI) claim from the provided token.
+	 *
+	 * @param token the JWT token from which to extract the JTI
+	 * @return the JTI value, or null if not present in the token
 	 */
 	public String getJti(String token) {
 		return parseClaims(token).get(CLAIM_JTI, String.class);
 	}
 
 	/**
-	 * 남은 만료 시간 조회
+	 * Returns the remaining time in milliseconds until the JWT token expires.
+	 *
+	 * @param token the JWT token to check
+	 * @return the number of milliseconds until the token's expiration time
 	 */
 	public long getExpiration(String token) {
 		return parseClaims(token).getExpiration().getTime() - System.currentTimeMillis();
 	}
 
-	// 내부 공통 메서드
+	/**
+	 * Constructs a JWT token with the specified user ID, role, expiration time, and optional JWT ID (JTI).
+	 *
+	 * @param userId      the unique identifier of the user to set as the token subject
+	 * @param role        the user role to include as a custom claim
+	 * @param expiration  the token's validity period in milliseconds
+	 * @param includeJti  whether to include a randomly generated JWT ID (JTI) claim
+	 * @return the generated JWT token as a compact string
+	 */
 	private String buildToken(Long userId, UserRole role, long expiration, boolean includeJti) {
 		JwtBuilder builder = Jwts.builder()
 				.setSubject(String.valueOf(userId))
@@ -99,6 +134,13 @@ public class JwtTokenProvider {
 		return builder.signWith(getSigningKey()).compact();
 	}
 
+	/**
+	 * Parses the given JWT token and returns its claims.
+	 *
+	 * @param token the JWT token to parse
+	 * @return the claims contained in the token
+	 * @throws io.jsonwebtoken.JwtException if the token is invalid or expired
+	 */
 	private Claims parseClaims(String token) {
 		return Jwts.parserBuilder()
 				.setSigningKey(getSigningKey())

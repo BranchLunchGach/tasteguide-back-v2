@@ -30,6 +30,15 @@ public class AuthService {
 	private final JwtExtractor jwtExtractor;
 	private final JwtBlacklistService jwtBlacklistService;
 
+	/**
+	 * Authenticates a user with the provided login credentials and issues new access and refresh tokens.
+	 *
+	 * If the email does not exist or the password is incorrect, an exception is thrown. On successful authentication, new tokens are generated and the refresh token is stored for future validation.
+	 *
+	 * @param request the login credentials containing email and password
+	 * @return a TokenResponse containing the generated access and refresh tokens
+	 * @throws BizException if the email is not found or the password is invalid
+	 */
 	@Transactional
 	public TokenResponse login(LoginRequest request) {
 		User user = userRepository.findByEmailOrElseThrow(request.email());
@@ -44,6 +53,11 @@ public class AuthService {
 		return tokens;
 	}
 
+	/**
+	 * Logs out the user by invalidating the provided JWT token and deleting the associated refresh token.
+	 *
+	 * If a valid token is found in the HTTP request, it is added to a blacklist to prevent further use, and the user's refresh token is removed. Any exceptions during this process are logged and suppressed.
+	 */
 	@Transactional
 	public void logout(HttpServletRequest request) {
 		try {
@@ -60,6 +74,14 @@ public class AuthService {
 		}
 	}
 
+	/**
+	 * Reissues new access and refresh tokens using a valid refresh token.
+	 *
+	 * Extracts and validates the refresh token from the provided bearer token. If the token is valid and matches the stored refresh token, deletes the old refresh token, generates new tokens, saves the new refresh token, and returns the new tokens. Throws a business exception if the token is invalid, missing, or has been reused.
+	 *
+	 * @param bearerToken the bearer token string containing the refresh token
+	 * @return a new {@link TokenResponse} containing refreshed access and refresh tokens
+	 */
 	@Transactional
 	public TokenResponse reissue(String bearerToken) {
 		// 1. Bearer 제거

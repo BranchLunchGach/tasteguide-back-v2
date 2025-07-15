@@ -12,6 +12,17 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    /**
+     * Handles authentication failures by sending a JSON response with HTTP status 401 (Unauthorized).
+     *
+     * This method is invoked when a user attempts to access a protected resource without proper authentication.
+     * It sets the response content type to JSON and returns a message indicating that authentication is required.
+     *
+     * @param request the HTTP request that resulted in an authentication failure
+     * @param response the HTTP response to be sent to the client
+     * @param authException the exception that triggered the authentication failure
+     * @throws IOException if an input or output error occurs while writing the response
+     */
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
