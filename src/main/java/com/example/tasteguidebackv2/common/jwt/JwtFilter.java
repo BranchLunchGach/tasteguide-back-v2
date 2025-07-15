@@ -1,6 +1,5 @@
 package com.example.tasteguidebackv2.common.jwt;
 
-import com.example.tasteguidebackv2.domain.users.repository.RedisRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,38 +20,46 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-	private final JwtUtil jwtUtil;
-	private final RedisRepository redisRepository;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtExtractor jwtExtractor;
+	private final JwtBlacklistService jwtBlacklistService;
 
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-		FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterInternal(
+			HttpServletRequest request,
+			HttpServletResponse response,
+			FilterChain filterChain
+	) throws ServletException, IOException {
 
-		String token = jwtUtil.extractToken(request);
+		String token = jwtExtractor.extractToken(request);
 
-		// JWT 블랙리스트 검증
-		if(redisRepository.validateKey(token)){
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"이미 로그아웃된 아이디입니다.");
+		if (token == null) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		// 블랙리스트 토큰인지 확인
+		if (jwtBlacklistService.isBlacklisted(token)) {
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "이미 로그아웃된 토큰입니다.");
 			return;
 		}
 
 		try {
-			if(jwtUtil.validateToken(token)){
-				// id 혹은 UserRole 검증
-				UserAuth userAuth = jwtUtil.extractUserAuth(token);
+			if (jwtTokenProvider.validateToken(token)) {
+				UserAuth userAuth = jwtTokenProvider.getUserAuth(token);
 
 				List<SimpleGrantedAuthority> authorities = List.of(
-					new SimpleGrantedAuthority("ROLE_" + userAuth.getUserRole().name())
+						new SimpleGrantedAuthority("ROLE_" + userAuth.getUserRole().name())
 				);
 
-				UsernamePasswordAuthenticationToken authToken =		//userAuth,null,authorities
-					new UsernamePasswordAuthenticationToken(userAuth,null, authorities);
+				UsernamePasswordAuthenticationToken authentication =
+						new UsernamePasswordAuthenticationToken(userAuth, null, authorities);
 
-				SecurityContextHolder.getContext().setAuthentication(authToken);
+				SecurityContextHolder.getContext().setAuthentication(authentication);
 			}
 		} catch (Exception e) {
 			log.error("JWT 인증 처리 중 예외 발생", e);
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"유효하지 않은 접근입니다.");
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰입니다.");
 			return;
 		}
 

@@ -1,5 +1,6 @@
 package com.example.tasteguidebackv2.common.config;
 
+import com.example.tasteguidebackv2.common.jwt.JwtAuthenticationEntryPoint;
 import com.example.tasteguidebackv2.common.jwt.JwtFilter;
 import com.example.tasteguidebackv2.common.oauth2.CustomOAuth2UserService;
 import com.example.tasteguidebackv2.common.oauth2.OAuth2LoginSuccessHandler;
@@ -23,6 +24,7 @@ public class SecurityConfig {
 	private final JwtFilter jwtFilter;
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
@@ -44,7 +46,10 @@ public class SecurityConfig {
 				.userInfoEndpoint(user -> user.userService(customOAuth2UserService))
 				.successHandler(oAuth2LoginSuccessHandler)
 			)
-			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+			.exceptionHandling(exception -> exception
+					.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+			);
 
 		return http.build();
 	}
