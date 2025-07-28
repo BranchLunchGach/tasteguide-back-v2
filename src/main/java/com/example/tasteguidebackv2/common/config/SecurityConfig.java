@@ -1,5 +1,6 @@
 package com.example.tasteguidebackv2.common.config;
 
+import com.example.tasteguidebackv2.common.jwt.JwtAccessDeniedHandler;
 import com.example.tasteguidebackv2.common.jwt.JwtAuthenticationEntryPoint;
 import com.example.tasteguidebackv2.common.jwt.JwtFilter;
 import com.example.tasteguidebackv2.common.oauth2.CustomOAuth2UserService;
@@ -25,7 +26,7 @@ public class SecurityConfig {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
+	private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -48,7 +49,8 @@ public class SecurityConfig {
 			)
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 			.exceptionHandling(exception -> exception
-					.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+					.authenticationEntryPoint(jwtAuthenticationEntryPoint)  // 인증 실패 (401)
+					.accessDeniedHandler(jwtAccessDeniedHandler)            // 인가 실패 (403)
 			);
 
 		return http.build();
