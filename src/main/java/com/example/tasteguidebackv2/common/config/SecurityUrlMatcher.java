@@ -6,6 +6,8 @@ public class SecurityUrlMatcher {
 	public static final String[] PUBLIC_URLS = {
 		"/api/users",
 		"/api/auth/login",
+		"/api/auth/send-code",
+		"/api/auth/verify-code",
 	};
 
 	public static final String[] ADMIN_URLS = {
