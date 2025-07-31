@@ -2,11 +2,14 @@ package com.example.tasteguidebackv2.domain.users.service;
 
 import com.example.tasteguidebackv2.common.exception.BizException;
 import com.example.tasteguidebackv2.common.jwt.UserAuth;
+import com.example.tasteguidebackv2.domain.mail.exception.MailErrorCode;
+import com.example.tasteguidebackv2.domain.mail.service.MailService;
 import com.example.tasteguidebackv2.domain.users.dto.request.UserCreateRequest;
 import com.example.tasteguidebackv2.domain.users.dto.request.UserUpdateRequest;
 import com.example.tasteguidebackv2.domain.users.dto.response.UserResponse;
 import com.example.tasteguidebackv2.domain.users.entity.User;
 import com.example.tasteguidebackv2.domain.users.exception.UserErrorCode;
+import com.example.tasteguidebackv2.domain.users.repository.RedisRepository;
 import com.example.tasteguidebackv2.domain.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,24 +23,36 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final RedisRepository redisRepository;
+	private final MailService mailService;
 
 	public void createUser(@RequestBody UserCreateRequest request) {
 
+		 // 1) 이메일 인증 완료 여부 확인
+		  boolean isVerified = redisRepository.hasKey("EMAIL_VERIFIED:" + request.email());
+		  if (!isVerified) {
+		  	throw new BizException(MailErrorCode.EMAIL_NOT_VERIFIED);
+		  }
+
+		// 2) 이메일 중복 검사
 		if (userRepository.existsByEmail(request.email())) {
 			throw new BizException(UserErrorCode.DUPLICATE_USER_EMAIL);
 		}
 
+		// 3) 비밀번호 암호화 및 회원 생성
 		String encodedPassword = passwordEncoder.encode(request.password());
-
 		User user = User.builder()
-			.email(request.email())
-			.password(encodedPassword)
-			.name(request.name())
-			.nickname(request.nickname())
-			.userRole(request.userRole())
-			.build();
+				.email(request.email())
+				.password(encodedPassword)
+				.name(request.name())
+				.nickname(request.nickname())
+				.userRole(request.userRole())
+				.build();
 
 		userRepository.save(user);
+
+		 // 4) 가입 성공 시 Redis에서 인증 완료 플래그 삭제
+		  redisRepository.delete("EMAIL_VERIFIED:" + request.email());
 	}
 
 	public UserResponse findById(UserAuth userAuth) {
