@@ -1,11 +1,13 @@
 package com.example.tasteguidebackv2.domain.users.repository;
 
 import com.example.tasteguidebackv2.common.exception.BizException;
+import com.example.tasteguidebackv2.domain.mail.exception.MailErrorCode;
 import com.example.tasteguidebackv2.domain.users.exception.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -59,4 +61,37 @@ public class RedisRepository {
 		String key = REFRESH_TOKEN_PREFIX + userId;
 		redisTemplate.delete(key);
 	}
+
+	public void saveMailAuthCode(String email, String code, Duration ttl) {
+		redisTemplate.opsForValue().set("EMAIL_CODE:" + email, code, ttl);
+	}
+
+	public String getMailAuthCode(String email) {
+		String code = redisTemplate.opsForValue().get("EMAIL_CODE:" + email);
+		if (code == null) {
+			throw new BizException(MailErrorCode.EMAIL_CODE_NOT_FOUND);
+		}
+		return code;
+	}
+
+	public void deleteMailAuthCode(String email) {
+		redisTemplate.delete("EMAIL_CODE:" + email);
+	}
+
+	public void save(String key, String value, Duration ttl) {
+		try {
+			redisTemplate.opsForValue().set(key, value, ttl);
+		} catch (Exception e) {
+			throw new BizException(MailErrorCode.SEND_FAILED);
+		}
+	}
+
+	public boolean hasKey(String key) {
+		return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+	}
+
+	public void delete(String key) {
+		redisTemplate.delete(key);
+	}
+
 }
