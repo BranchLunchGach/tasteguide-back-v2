@@ -16,9 +16,11 @@ public class MailController {
     private final MailService mailService;
 
     /**
-     * 비밀번호 재설정용 인증 코드 메일 발송
+     * 회원가입용 인증 코드 메일 발송
      */
     @PostMapping("/send-code")
+    // @RateLimiter(name = "sendCode", fallbackMethod = "sendCodeFallback")
+    // 요청 제한 같은 IP에서 1분에 1번만 호출 가능, 같은 이메일 주소로 하루에 5번만 가능(라이브러리 설치 필요) -> 레디스로도 구현 가능
     public ResponseEntity<Void> sendCode(@RequestBody @Valid MailAuthCodeRequest request) {
         mailService.sendVerificationCode(request.email());
         return ResponseEntity.ok().build();
