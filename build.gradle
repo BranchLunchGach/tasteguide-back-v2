@@ -24,44 +24,71 @@ repositories {
 }
 
 dependencies {
-    // 환경변수 .env
-    implementation("me.paulschwarz:spring-dotenv:4.0.0")
+    // ======================
+    // [기본/웹]
+    // ======================
+    implementation 'org.springframework.boot:spring-boot-starter-web' // Spring MVC + 내장 Tomcat 서버 제공 → REST API 개발 기본
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
+    // ======================
+    // [데이터베이스 & ORM]
+    // ======================
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'    // JPA + Hibernate 기반 ORM
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'  // RedisTemplate 기반 캐시/세션/인증코드 저장
+    implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'         // Redis 고급 기능(분산락, Pub/Sub 등)
+    runtimeOnly 'com.mysql:mysql-connector-j'                                 // MySQL JDBC 드라이버
+    runtimeOnly 'com.h2database:h2'                                           // 인메모리 H2 데이터베이스 (테스트용)
+
+    // ======================
+    // [보안/인증]
+    // ======================
+    implementation 'org.springframework.boot:spring-boot-starter-security'    // Spring Security 기반 인증/인가
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' // OAuth2 소셜 로그인 (구글, 카카오 등)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'    // JWT 토큰 발급/검증 (API)
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'      // JWT 구현체
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'   // JWT JSON 처리 (Jackson)
+    implementation 'at.favre.lib:bcrypt:0.10.2'         // 비밀번호 해시 처리 (BCrypt)
+
+    // ======================
+    // [유효성 검증 & AOP]
+    // ======================
+    implementation 'org.springframework.boot:spring-boot-starter-validation'  // Bean Validation (JSR-380) → @Valid
+    implementation 'org.springframework.boot:spring-boot-starter-aop'         // AOP (로깅, 권한 체크, 트랜잭션 보조)
+
+    // ======================
+    // [메일 발송]
+    // ======================
+    implementation 'org.springframework.boot:spring-boot-starter-mail'        // JavaMailSender, MimeMessageHelper 등 이메일 발송 기능
+
+    // ======================
+    // [개발 편의성]
+    // ======================
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'                       // .env 파일 환경 변수 로딩
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'                  // Querydsl JPA → 타입 안전 쿼리
+    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'             // Querydsl Q클래스 생성
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'           // Jakarta 표준 애노테이션
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'         // JPA 애노테이션 정의
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'    // Java 8 날짜/시간(LocalDateTime) 직렬화
+    implementation 'org.jsoup:jsoup:1.15.4'                                   // HTML 파싱/크롤링
+
+    // ======================
+    // [Lombok]
+    // ======================
+    compileOnly 'org.projectlombok:lombok'                // Lombok(코드 자동 생성)
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    // Redisson
-    implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
-    implementation 'at.favre.lib:bcrypt:0.10.2'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    runtimeOnly 'com.h2database:h2'
-    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
-    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
-    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:mysql'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
-    //jsoup추가
-    implementation 'org.jsoup:jsoup:1.15.4'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
-    // O'Auth2
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // ======================
+    // [테스트]
+    // ======================
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'    // JUnit5, Mockito 등 통합 테스트
+    testImplementation 'org.springframework.security:spring-security-test'    // Security 테스트용
+    testImplementation 'org.testcontainers:junit-jupiter'                     // Testcontainers JUnit5 통합
+    testImplementation 'org.testcontainers:mysql'                             // MySQL 컨테이너 테스트
+    testImplementation 'org.assertj:assertj-core:3.24.2'                      // 가독성 좋은 단언문(Assertions)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'              // JUnit 플랫폼 런처
 }
+
 
 tasks.named('test') {
     useJUnitPlatform()
